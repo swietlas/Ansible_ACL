@@ -47,25 +47,25 @@
     - name: OSPF interfaces configuration
       cisco.iosxr.iosxr_ospf_interfaces:
         config:
-          - name: GigabitEthernet0/0/0/0
-            type: gigabitethernet
+          - name: "GigabitEthernet0/0/0/0"
+            type: "gigabitethernet"
             address_family:
-              - afi: ipv4
+              - afi: "ipv4"
                 processes:
-                  - process_id: 1
+                  - process_id: "1"
                     area:
-                      area_id: 0.0.0.0
+                      area_id: "0.0.0.0"
 
-          - name: GigabitEthernet0/0/0/1
-            type: gigabitethernet
+          - name: "GigabitEthernet0/0/0/1"
+            type: "gigabitethernet"
             address_family:
-              - afi: ipv4
+              - afi: "ipv4"
                 processes:
-                  - process_id: 1
+                  - process_id: "1"
                     area:
-                      area_id: 0.0.0.1
-        state: rendered
-        # state: merged
+                      area_id: "0.0.0.1"
+        # state: rendered
+        state: merged
 
 
 
