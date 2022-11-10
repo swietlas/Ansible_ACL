@@ -1,0 +1,9 @@
+interface Ethernet0/0
+   description Link to R2 configured by Ansible 
+   ip address 192.168.12.1 255.255.255.252
+   no shutdown
+interface Ethernet0/1
+   description Link to D1 configured by Ansible 
+   ip address 192.168.1.1 255.255.255.0
+   no cdp enable
+   no shutdown

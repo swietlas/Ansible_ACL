@@ -1,0 +1,160 @@
+access-list 99 deny   192.168.1.0 0.0.0.255
+access-list 99 permit any
+
+R2 | SUCCESS => {
+    "changed": false,
+    "gathered": [
+        {
+            "acls": [
+                {
+                    "aces": [
+                        {
+                            "grant": "deny",
+                            "sequence": 10,
+                            "source": {
+                                "address": "192.168.1.0",
+                                "wildcard_bits": "0.0.0.255"
+                            }
+                        },
+                        {
+                            "grant": "permit",
+                            "sequence": 20,
+                            "source": {
+                                "host": "any"
+                            }
+                        }
+                    ],
+                    "acl_type": "standard",
+                    "name": "99"
+                }
+            ],
+            "afi": "ipv4"
+        }
+    ]
+}
+**********************************************************
+ip access-list extended AREA1_TO_AREA2
+ deny   ip host 192.168.1.10 any ttl lt 25
+ permit icmp host 192.168.1.10 192.168.2.0 0.0.0.255 echo
+ permit tcp host 192.168.1.10 host 192.168.2.2 eq telnet
+ permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.3 eq 22
+ permit tcp host 192.168.1.10 host 192.168.2.3 eq www
+ permit tcp host 192.168.1.10 host 192.168.2.3 eq 443
+ deny   ip any any
+ 
+ (venv) swt@amd:~/Repo/Automation/Ansible_demo/ACLs$ ansible -m ios_acls R1 -a state=gathered 
+R1 | SUCCESS => {
+    "changed": false,
+    "gathered": [
+        {
+            "acls": [
+                {
+                    "aces": [
+                        {
+                            "destination": {
+                                "any": true
+                            },
+                            "grant": "deny",
+                            "protocol": "ip",
+                            "sequence": 10,
+                            "source": {
+                                "host": "192.168.1.10"
+                            },
+                            "ttl": {
+                                "lt": 25
+                            }
+                        },
+                        {
+                            "destination": {
+                                "address": "192.168.2.0",
+                                "wildcard_bits": "0.0.0.255"
+                            },
+                            "grant": "permit",
+                            "protocol": "icmp",
+                            "protocol_options": {
+                                "icmp": {
+                                    "echo": true
+                                }
+                            },
+                            "sequence": 20,
+                            "source": {
+                                "host": "192.168.1.10"
+                            }
+                        },
+                        {
+                            "destination": {
+                                "host": "192.168.2.2",
+                                "port_protocol": {
+                                    "eq": "telnet"
+                                }
+                            },
+                            "grant": "permit",
+                            "protocol": "tcp",
+                            "sequence": 30,
+                            "source": {
+                                "host": "192.168.1.10"
+                            }
+                        },
+                        {
+                            "destination": {
+                                "host": "192.168.2.3",
+                                "port_protocol": {
+                                    "eq": "22"
+                                }
+                            },
+                            "grant": "permit",
+                            "protocol": "tcp",
+                            "sequence": 40,
+                            "source": {
+                                "address": "192.168.1.0",
+                                "wildcard_bits": "0.0.0.255"
+                            }
+                        },
+                        {
+                            "destination": {
+                                "host": "192.168.2.3",
+                                "port_protocol": {
+                                    "eq": "www"
+                                }
+                            },
+                            "grant": "permit",
+                            "protocol": "tcp",
+                            "sequence": 50,
+                            "source": {
+                                "host": "192.168.1.10"
+                            }
+                        },
+                        {
+                            "destination": {
+                                "host": "192.168.2.3",
+                                "port_protocol": {
+                                    "eq": "443"
+                                }
+                            },
+                            "grant": "permit",
+                            "protocol": "tcp",
+                            "sequence": 60,
+                            "source": {
+                                "host": "192.168.1.10"
+                            }
+                        },
+                        {
+                            "destination": {
+                                "any": true
+                            },
+                            "grant": "deny",
+                            "protocol": "ip",
+                            "sequence": 70,
+                            "source": {
+                                "any": true
+                            }
+                        }
+                    ],
+                    "acl_type": "extended",
+                    "name": "AREA1_TO_AREA2"
+                }
+            ],
+            "afi": "ipv4"
+        }
+    ]
+}

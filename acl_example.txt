@@ -1,0 +1,107 @@
+cisco#sh access-lists
+Extended IP access list 110
+  10 deny icmp 192.0.2.0 0.0.0.255 192.0.3.0 0.0.0.255 traceroute dscp ef ttl eq 10
+  20 deny tcp host 198.51.100.0 host 198.51.110.0 eq telnet ack
+Extended IP access list test_acl
+  10 deny tcp 192.0.2.0 0.0.0.255 192.0.3.0 0.0.0.255 eq www fin option traceroute ttl eq 10
+IPv6 access list R1_TRAFFIC
+  deny tcp any eq www any eq telnet ack dscp af11 sequence 10
+
+  
+--
+- name: convert configured ACLs to structured data
+  hosts: cisco
+  gather_facts: false
+  tasks:
+
+
+    - name: Use the ACLs resource module to gather the current config
+       cisco.ios.ios_acls:
+           state: gathered
+           register: acls
+
+    - name: Create inventory directory
+      file:
+       path: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}"
+       state: directory
+
+    - name: Write the ACL configuration to a file
+      copy:
+        content: "{{ {‘acls’: acls['gathered']} | to_nice_yaml }}"
+        dest: "{{ inventory_dir }}/host_vars/{{ inventory_hostname }}/acls.yaml"
+
+        
+$ cat lab_inventory/host_vars/rtr2/acls.yaml
+acls:
+- acls:
+     - aces:
+         - destination:
+             address: 192.0.3.0
+             wildcard_bits: 0.0.0.255
+           dscp: ef
+           grant: deny
+           protocol: icmp
+           protocol_options:
+             icmp:
+               traceroute: true
+           sequence: 10
+           source:
+             address: 192.0.2.0
+             wildcard_bits: 0.0.0.255
+           ttl:
+             eq: 10
+         - destination:
+             host: 198.51.110.0
+             port_protocol:
+               eq: telnet
+           grant: deny
+           protocol: tcp
+           protocol_options:
+             tcp:
+               ack: true
+           sequence: 20
+           source:
+             host: 198.51.100.0
+       acl_type: extended
+       name: '110'
+     - aces:
+         - destination:
+             address: 192.0.3.0
+             port_protocol:
+                 eq: www
+             wildcard_bits: 0.0.0.255
+           grant: deny
+           option:
+               traceroute: true
+           protocol: tcp
+           protocol_options:
+               tcp:
+                   fin: true
+           sequence: 10
+           source:
+             address: 192.0.2.0
+             wildcard_bits: 0.0.0.255
+           ttl:
+               eq: 10
+       acl_type: extended
+       name: test_acl
+   afi: ipv4
+ - acls:
+     - aces:
+         - destination:
+             any: true
+             port_protocol:
+               eq: telnet
+           dscp: af11
+           grant: deny
+           protocol: tcp
+           protocol_options:
+             tcp:
+               ack: true
+           sequence: 10
+           source:
+             any: true
+             port_protocol:
+               eq: www
+       name: R1_TRAFFIC
+   afi: ipv6

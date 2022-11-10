@@ -1,0 +1,7 @@
+interface Ethernet0/0
+   description Link to R1 configured by Ansible 
+   no shutdown
+interface Vlan 10
+   description Link to R1 configured by Ansible 
+   ip address 192.168.1.2 255.255.255.0
+   no shutdown

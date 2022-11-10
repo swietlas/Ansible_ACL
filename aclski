@@ -1,0 +1,58 @@
+Configure a numbered standard ACL on R3 and block data traffic from the 192.168.1.0 /24 network.
+R3(config)# access-list 99 deny 192.168.1.0 0.0.0.255
+R3(config)# access-list 99 permit 0.0.0.0 255.255.255.255
+
+R3(config-if)# ip access-group 99 out
+
+Step 4: Configure a named standard ACL to limit management traffic to R3.
+Create a named standard ACL using the name MGMT-TRAFFIC. The ACL should only permit Telnet access to the management plane on R3 from PC1. Explicitly deny access from any other IPv4 destination and log the attempts.
+R3(config)# ip access-list standard MGMT-TRAFFIC
+R3(config-std-nacl)# permit host 192.168.1.10
+R3(config-std-nacl)# deny any log
+R3(config-std-nacl)# exit
+
+            Step 5: Apply the named standard ACL to the correct interface and in the correct direction.
+Use the access-class command to apply the MGMT-TRAFFIC ACL to all inbound vty lines on R3. Outbound Telnet connections from R3 will still be allowed. 
+R3(config)# line vty 0 4
+R3(config-line)# access-class MGMT-TRAFFIC in
+R3(config-line)# end
+
+
+        Part 4: Implement a Named Extended ACL from Area 1 to Area 2
+Extended ACLs can filter traffic based on more than just source address. Extended ACLs can filter on protocol, source, and destination IP addresses, and source and destination port numbers. Extended ACLs may also be used to filter IP packets with header options. 
+When filtering data traffic using an extended ACL, it is considered best practice to apply the ACL as close to the source as possible. You can configure both numbered and named extended ACLs. Part 4 of this lab uses a named extended ACL. Review the ACL policy that will be implemented using a named extended ACL.
+On R1, use the following requirements to create a named extended ACL that will filter traffic originating from OSPF area 1 destined to OSPF area 2. As a result, all traffic from area 2 destined to area 1 will also be filtered:
+    • Name the extended ACL AREA1_TO_AREA2.
+    • Deny any IP traffic from PC1 with a time-to-live (TTL) value less than 25.
+    • Permit PC1 to send ICMP echo packets to 192.168.2.0/24.
+    • Permit PC1 Telnet access to D2.
+    • Permit 192.168.1.0/24 network to SSH to A1.
+    • Permit PC1 to send HTTP traffic to A1.
+    • Permit PC1 to send HTTPS traffic to A1.
+    • Explicitly deny all other traffic.
+    
+R1(config)# ip access-list extended AREA1_TO_AREA2
+R1(config-ext-nacl)# deny ip host 192.168.1.10 any ttl lt 25
+R1(config-ext-nacl)# permit icmp host 192.168.1.10 192.168.2.0 0.0.0.255 echo
+R1(config-ext-nacl)# permit tcp host 192.168.1.10 host 192.168.2.2 eq 23
+R1(config-ext-nacl)# permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.3 eq 22
+R1(config-ext-nacl)# permit tcp host 192.168.1.10 host 192.168.2.3 eq 80
+R1(config-ext-nacl)# permit tcp host 192.168.1.10 host 192.168.2.3 eq 443
+R1(config-ext-nacl)# deny ip any any
+R1(config-ext-nacl)# end
+
+
+
+ ip access-group AREA1-to-AREA2 in
+ip access-list extended AREA1-to-AREA2
+ deny   ip host 10.10.1.2 any ttl lt 25
+ permit icmp host 10.10.1.2 10.10.5.0 0.0.0.255 echo
+ permit tcp host 10.10.1.2 host 10.10.5.2 eq telnet
+ permit tcp host 10.10.1.2 host 10.10.5.1 eq www
+ permit tcp host 10.10.1.2 host 10.10.5.1 eq 443
+ deny   ip any any
+ 
+ 
+ access-list 99 deny   10.10.6.0 0.0.0.255
+access-list 99 permit any
+R1#

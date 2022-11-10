@@ -1,0 +1,14 @@
+- name: Play to set up IOSXR
+  hosts: R1xr
+  gather_facts: false
+  tasks:
+    
+    - name: Gather ospf_interfaces routes configuration
+      cisco.iosxr.iosxr_ospf_interfaces:
+        state: gathered
+
+
+    - name: Gather ospfv2 routes configuration
+      cisco.iosxr.iosxr_ospfv2:
+        state: gathered        
+    

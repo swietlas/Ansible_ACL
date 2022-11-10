@@ -1,0 +1,48 @@
+interfaces:
+ - name: Ethernet0/0
+   description: Link to R1 configured by Ansible
+   ipv4: 192.168.12.2/30
+  #  ipv6: 2001:db8:acad:12::2/64
+  #  link_local: fe80::12:2
+  
+ - name: Ethernet0/1
+   description: Link to D2 configured by Ansible
+   ipv4: 192.168.2.1/24
+  #  ipv6: 2001:db8:acad:23::2/64
+  #  link_local: fe80::23:2
+   cdp: 'no'
+
+
+ - name: Loopback 1
+   description: Loopback 1 configured by Ansible
+   ipv4: 192.168.22.1/24
+  #  ipv6: 2001:db8:acad:1::1/64
+  #  link_local: fe80::1:1
+
+# OSPF config data# OSPF config data
+ospf:
+  process_id: 2
+  router_id: 2.2.2.2
+  default_orignate: "false"
+  auto_cost:
+    reference_bandwidth: 1000
+
+ospf_networks:
+    - address: "192.168.12.0"
+      wildcard_bits: "0.0.0.3"
+      area: "0"
+
+    - address: "192.168.22.0"
+      wildcard_bits: "0.0.0.255"
+      area: "0"
+
+    - address: "192.168.2.0"
+      wildcard_bits: "0.0.0.255"
+      area: "2"
+
+# ip route 0.0.0.0 0.0.0.0 Loopback0
+# ip route 10.10.0.0 255.255.252.0 64.100.0.2
+# ip route 10.10.4.0 255.255.252.0 64.100.1.2
+# ip route 10.10.16.0 255.255.248.0 64.100.1.2
+other_settings:
+  - opt: "no ip domain lookup"

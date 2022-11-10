@@ -1,0 +1,48 @@
+---
+- name: Set ACLs
+  hosts: R1
+  gather_facts: false
+  tasks:
+
+    # - name: ACL
+    #   cisco.ios.ios_acls:
+    #     config:
+    #       - afi: ipv4
+    #         acls:
+    #           - name: "{{ acls.name }}"
+    #     state: merged
+    #   loop: "{{ acls }}"
+
+
+  - name: Parse the commands for provided configuration
+    cisco.ios.ios_acls:
+      #running_config: "{{ lookup('file', 'parsed.cfg') }}"
+      running_config:
+           "ipv6 access-list R1_TRAFFIC
+           deny tcp any eq www any eq telnet ack dscp af11"
+      state: parsed
+    register: acl_parsed
+
+  # - name: Parse given config to structured data
+  #   cisco.ios.ios_acls:
+  #   #cisco.nxos.nxos_acls:
+  #     running_config: "{{ lookup('file', 'R1_acls.cfg') }}"
+  #     #running_config: "{{ lookup('file', 'nexus-acl-template.txt') }}"
+      
+  #     state: parsed
+  #   register: acl_parsed
+
+  - name: display
+    ansible.builtin.debug:
+      var: acl_parsed["stdout"][0]
+
+  # - name: display value of "myintipv4" variable
+  #   debug:
+  #     var: myintipv4["stdout_lines"][0]
+
+  # - name: Do reconciliation of parsed ACL
+  #   cisco.ios.ios_acls:
+  #     config: "{{ acl_parsed.parsed }}"
+  #     state: replaced
+  #   register: acl_ran
+

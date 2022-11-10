@@ -1,0 +1,39 @@
+interfaces:
+
+ - name: Ethernet0/0
+   description: Link to D2 configured by Ansible
+   mode: trunk
+   allowed_vlans: 10-21,40
+   native: 20
+   encap: dot1q 
+
+ - name: Ethernet0/1
+   description: Link to PC1 configured by Ansible
+   mode: access
+   access_vlan: 20
+   voice_vlan: 50
+
+ - name: Vlan 20
+   description: SVI VLAN10 configured by Ansible
+   ipv4: 192.168.2.3/24
+ 
+other_settings:
+  - opt: "ip default-gateway 192.168.2.1"
+  - opt: "no ip domain lookup"
+  - opt: "ip route 0.0.0.0 0.0.0.0 192.168.2.1"
+# router ospf 123
+#  router-id 1.1.1.2
+#  auto-cost reference-bandwidth 1000
+#  network 10.10.0.0 0.0.3.255 area 0
+#  exit
+
+# ospf:
+#   process_id: 123
+#   router_id: 2.2.2.3
+#   default_orignate: "False"
+#   auto_cost:
+#     reference_bandwidth: 1000
+# ospf_networks:
+#     - address: "10.10.0.0"
+#       wildcard_bits: "0.0.3.255"
+#       area: "0"

@@ -1,0 +1,8 @@
+- name: Play 1
+  hosts: R1
+  gather_facts: false
+  tasks:
+  - name: Parse the commands for provided configuration
+    cisco.ios.ios_l2_interfaces:
+      running_config: "{{ lookup('file', 'l2_parsed.cfg') }}"
+      state: parsed

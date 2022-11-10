@@ -1,0 +1,95 @@
+- name: Play to set up IOSXR
+  hosts: R1xr
+  gather_facts: false
+  tasks:
+    - name: Setup interfaces
+      cisco.iosxr.iosxr_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            description: "{{ item.description }}"
+            enabled: "true"
+
+        state: merged
+      loop: "{{ interfaces }}"
+      loop_control:
+        label: "{{ item.name }}"
+      # when: "item.L3 is defined"
+      tags: intf
+
+    - name: Configure IPv4 adresses
+      cisco.iosxr.iosxr_l3_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            ipv4:
+              - address: "{{ item.ipv4 }}"
+
+      loop: "{{ interfaces }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: intf_l3
+
+    - name: OSPFv2 configuration
+      cisco.iosxr.iosxr_ospfv2:
+        config:
+          processes:
+            - process_id: "{{ ospf.process_id }}"
+              router_id: "{{ ospf.router_id }}"
+              areas:
+                - area_id: "{{ item.area_id }}"
+              auto_cost:
+                reference_bandwidth: 1000
+        state: merged
+      loop: "{{ ospf.areas }}"
+      loop_control:
+        label: "{{ item.area_id }}"
+      tags: ospfprocess
+
+    - name: OSPF interfaces configuration
+      cisco.iosxr.iosxr_ospf_interfaces:
+        config:
+          - name: GigabitEthernet0/0/0/0
+            type: gigabitethernet
+            address_family:
+              - afi: ipv4
+                processes:
+                  - process_id: 1
+                    area:
+                      area_id: 0.0.0.0
+
+          - name: GigabitEthernet0/0/0/1
+            type: gigabitethernet
+            address_family:
+              - afi: ipv4
+                processes:
+                  - process_id: 1
+                    area:
+                      area_id: 0.0.0.1
+        state: rendered
+        # state: merged
+
+
+
+    # - name: OSPF interfaces configuration
+    #   cisco.iosxr.iosxr_ospf_interfaces:
+    #     config:
+    #       - name: "{{ item.name }}"
+    #         type: gigabitethernet
+    #         address_family:
+    #           - afi: ipv4
+    #             processes:
+    #               - process_id: "{{ ospf.process_id }}"
+    #                 area:
+    #                   area_id: "{{ item.ospf_area_id }}"
+    #     # state: rendered
+    #     state: merged
+    #   when: item.ospf_area_id is defined
+    #   loop: "{{ interfaces }}"
+    #   loop_control:
+    #     label: "{{ item.name }}"
+    #   tags: ospfintf
+    #   register: ospfintf_rendered
+
+    # - name: Debug parsed
+    #   ansible.builtin.debug:
+    #     var: ospfintf_renderedvar["stdout"][0]
+    #   tags: debug

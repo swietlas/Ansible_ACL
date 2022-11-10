@@ -1,0 +1,18 @@
+[core]
+D1
+D2
+
+[routers]
+R1
+R2
+
+[routersxr]
+R1xr ansible_host=10.10.7.227
+R2xr ansible_host=10.10.1.137
+
+[access]
+A2
+
+[switches:children]
+core
+access

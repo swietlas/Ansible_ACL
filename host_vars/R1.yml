@@ -1,0 +1,60 @@
+interfaces:
+ - name: Ethernet0/0
+   description: Link to R2 configured by Ansible
+   ipv4: 192.168.12.1/30
+  #  ipv6: 2001:db8:acad:12::1/64
+  #  link_local: fe80::12:1
+
+ - name: Ethernet0/1
+   description: Link to D1 configured by Ansible
+   ipv4: 192.168.1.1/24
+  #  ipv6: 2001:db8:acad:11::1/64
+  #  link_local: fe80::11:1
+   cdp: 'no'
+
+
+
+# OSPF config data
+ospf:
+  process_id: 1
+  router_id: 1.1.1.1
+  default_orignate: "false"
+  auto_cost:
+    reference_bandwidth: 1000
+
+ospf_networks:
+    - address: "192.168.12.0"
+      wildcard_bits: "0.0.0.3"
+      area: "0"
+    - address: "192.168.1.0"
+      wildcard_bits: "0.0.0.255"
+      area: "1"
+
+# Additional static routes
+# routes:
+#   - route: 1
+#     dest: "0.0.0.0/0"
+#     nexthop: "64.100.0.1"
+#     name: "Default_to_R2"
+
+#ip route 0.0.0.0 0.0.0.0 64.100.0.1
+
+other_settings:
+  - opt: "no ip domain lookup"
+
+acls:
+ - name: "AREA1_TO_AREA2"
+   acl_type: "extended"
+   aces:
+    - destination: 
+        address: ""
+        wildcard_bits: ""
+        any: "true"
+        host: "192.168.1.10"
+      grant: "deny"
+      protocol: "ip"
+      source:
+        host: "192.168.1.10"
+      ttl:
+        lt: 25
+      
