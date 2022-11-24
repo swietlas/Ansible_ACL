@@ -1,0 +1,23 @@
+- name: Play to set up OSPF on IOSXR routers
+  hosts: routersxr
+  gather_facts: false
+  tasks:
+
+    - name: Collect ios_facts
+      cisco.iosxr.iosxr_facts:
+        gather_subset:
+          - min
+      register: facts
+      tags: hwinfo
+
+    - name: Generate config from jinja template
+      ansible.builtin.template:
+        src: iosxr_ospf.j2
+        dest: ./ospfconfig/"{{ ansible_net_hostname }}".cfg
+        backup: true
+        mode: 0640
+
+    - name: Setup OSPF
+      cisco.iosxr.iosxr_config:
+        src: ./ospfconfig/"{{ ansible_net_hostname }}".cfg
+        replace: config

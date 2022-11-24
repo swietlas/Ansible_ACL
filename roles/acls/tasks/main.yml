@@ -1,0 +1,67 @@
+---
+- name: Parse given config to structured data
+  cisco.iosxr.iosxr_acls:
+    running_config: "{{ lookup('file', 'acls/R1xr.cfg') }}"
+    state: parsed
+  register: acl_parsed
+
+# - name: Display Parsed
+#   ansible.builtin.debug:
+#     var: acl_parsed
+
+- name: Do reconciliation of parsed ACL
+  cisco.iosxr.iosxr_acls:
+    config: "{{ acl_parsed.parsed }}"
+    state: replaced
+  register: acl_ran
+
+- name: Debug when changed
+  when: acl_ran.changed # == true
+  ansible.builtin.debug:
+    var: acl_ran.commands
+
+- name: Assign acls to interface
+  cisco.iosxr.iosxr_acl_interfaces:
+    config:
+      - name: "{{ item.interface }}"
+        access_groups:
+          - afi: ipv4
+            acls:
+              - name: "{{ item.acl_name }}"
+                direction: "{{ item.direction }}"
+  when: ACLs is defined
+  loop: "{{ ACLs }}"
+  loop_control:
+    label: "{{ item.interface }}"
+  tags: ACL_intf
+
+- name: Run verification commands
+  cisco.iosxr.iosxr_command:
+    commands: # show access-list
+      - show access-list
+      - show run interface
+  register: sh_output
+  tags: show_output
+
+- name: Display ACL settings
+  ansible.builtin.debug:
+    msg:
+      - "show access-list"
+      - "{{ sh_output['stdout_lines'][0] }}"
+      - " sh run interfaces"
+      - "{{ sh_output['stdout_lines'][1] }}"
+
+  tags: show_output
+
+- name: Setting host facts from sh_output to save it to file in next task
+  ansible.builtin.set_fact:
+    # sh_output_json: "{{ sh_output['stdout_lines'][1] | to_nice_json(indent=8) }}"
+    sh_output_parsed: "{{ sh_output['stdout_lines'][1] | to_nice_yaml(indent=8) }}"
+  tags: save_output
+
+- name: Write content of sh_output_parsed variable to file
+  ansible.builtin.copy:
+    content: "{{ sh_output_parsed }}"
+    dest: "sh_interfaces_yml.txt"
+    mode: u+rw,g-wx,o-rwx
+  tags: save_output

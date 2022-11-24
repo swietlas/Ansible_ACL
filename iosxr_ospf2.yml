@@ -1,0 +1,76 @@
+- name: Play to set up OSPF on IOSXR routers version 2
+  hosts: routersxr
+  gather_facts: false
+  tasks:
+
+# That should look like OSPF v2 configuration but looks like some bugs in iosxr_ospfv2 module.
+    - name: OSPFv2 configuration
+      cisco.iosxr.iosxr_ospfv2:
+        config:
+          processes:
+            - process_id: "{{ ospf.process_id }}"
+              router_id: "{{ ospf.router_id }}"
+              areas:
+                - area_id: "{{ item.area_id }}"
+              auto_cost:
+                reference_bandwidth: 1000
+        state: merged
+      loop: "{{ ospf.areas }}"
+      loop_control:
+        label: "{{ item.area_id }}"
+      tags: ospfprocess
+
+    # - name: OSPF interfaces configuration
+    #   cisco.iosxr.iosxr_ospf_interfaces:
+    #     config:
+    #       - name: "GigabitEthernet0/0/0/0"
+    #         type: "gigabitethernet"
+    #         address_family:
+    #           - afi: "ipv4"
+    #             processes:
+    #               - process_id: "1"
+    #                 area:
+    #                   area_id: "0.0.0.0"
+
+    #       - name: "GigabitEthernet0/0/0/1"
+    #         type: "gigabitethernet"
+    #         address_family:
+    #           - afi: "ipv4"
+    #             processes:
+    #               - process_id: "1"
+    #                 area:
+    #                   area_id: "0.0.0.1"
+    #     # state: rendered
+    #     state: merged
+
+
+# That should look like OSPF interface configuration but looks like some bugs in iosxr_ospf_interfaces module.
+# no rendered output is generated
+    - name: OSPF interfaces configuration
+      cisco.iosxr.iosxr_ospf_interfaces:
+        config:
+          - name: "{{ item.1.name }}"
+            type: gigabitethernet
+            address_family:
+              - afi: ipv4
+                processes:
+                  - process_id: "{{ ospf.process_id }}"
+                    area:
+                      area_id: "{{ item.0.area_id  }}"
+        # state: rendered
+        state: merged
+      when: ospf is defined
+      # loop: "{{ ospf.areas.area_id }}"
+      # loop_control:
+      #   label: "{{ item.name }}"
+      with_subelements:
+        - "{{ ospf.areas }}"
+        - interfaces
+
+      tags: ospfintf
+      register: ospfintf_rendered
+
+    # - name: Debug parsed
+    #   ansible.builtin.debug:
+    #     var: ospfintf_renderedvar["stdout"][0]
+    #   tags: debug

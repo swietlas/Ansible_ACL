@@ -8,10 +8,18 @@
   register: facts
   tags: hwinfo
 
-- name: Backup configuration 
+- name: Backup IOS configuration
   cisco.ios.ios_config:
-    backup: yes
+    backup: true
     backup_options:
-      filename: "{{ pref }}_{{ ansible_net_hostname }}_{{ hostvars['localhost']['DTG'] }}.cfg"
+      filename: "{{ pref }}_{{ ansible_net_hostname }}_{{ hostvars['localhost']['dtg'] }}.cfg"
       dir_path: backups
-      
+  when: ansible_net_system == "ios"
+
+- name: Backup IOSXR configuration
+  cisco.iosxr.iosxr_config:
+    backup: true
+    backup_options:
+      filename: "{{ pref }}_{{ ansible_net_hostname }}_{{ hostvars['localhost']['dtg'] }}.cfg"
+      dir_path: backups
+  when: ansible_net_system == "iosxr"

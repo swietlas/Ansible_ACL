@@ -1,0 +1,29 @@
+---
+- name: Setup interfaces
+  cisco.iosxr.iosxr_interfaces:
+    config:
+      - name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        enabled: "true"
+
+    state: merged
+  loop: "{{ interfaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  # when: "item.L3 is defined"
+  tags: intf
+
+- name: Configure IPv4 adresses
+  cisco.iosxr.iosxr_l3_interfaces:
+    config:
+      - name: "{{ item.name }}"
+        ipv4:
+          - address: "{{ item.ipv4 }}"
+        # ipv6:other_settings:
+        #   - address: "{{ item.ipv6 }}"
+
+  loop: "{{ interfaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags: intf_l3
+  #when: "'Loopback' not in item.name"

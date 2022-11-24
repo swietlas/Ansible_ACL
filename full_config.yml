@@ -6,11 +6,11 @@
 
     - name: Config Timestamp
       ansible.builtin.set_fact:
-        DTG: "{{ ansible_date_time.iso8601 }}"
-      tags: gettime  
+        dtg: "{{ ansible_date_time.iso8601 }}"
+      tags: gettime
 
 - name: Pre CRQ config backup
-  hosts: all
+  hosts: routersxr,switches
   gather_facts: false
   tags: backup
   vars:
@@ -20,28 +20,31 @@
 
 - name: Apply switch configs
   hosts: switches
-  gather_facts: False
+  gather_facts: false
   tags: basic
   roles:
     - sw_ip_routing
     - sw_interfaces
+    - ios_rtr_interfaces
 
-- name: Configuring Basic Settings (Addr,Banner,basic EIGRP)
+- name: Configuring Basic Settings (Addr,Banner)
   hosts: all
-  gather_facts: False
+  gather_facts: false
   tags: basic
   roles:
     - motd_banner
-    - rtr_interfaces
-    - ospf
+    - role: iosxr_interfaces
+      when: ansible_net_system == "iosxr"
+    - role: ospf
+      when: ansible_net_system == "ios"
 
-- name: Configuring ACLs 
-  hosts: all
-  gather_facts: False
+- name: Configuring ACLs
+  hosts: routersxr
+  gather_facts: false
   tags: acls
   roles:
-    #- acls 
-    - save_config
+    - role: acls
+      when: ACLs is defined
 
 - name: Applying additional settings
   hosts: all
@@ -54,23 +57,31 @@
       loop: "{{ other_settings }}"
       loop_control:
         label: "{{ item.opt }}"
-      when: "other_settings is defined" 
+      when:
+        - "other_settings is defined"
+        - "ansible_net_system == 'ios'"
 
 # - name: Pause for OSPF to converge
 #   hosts: localhost
 #   tasks:
-#     - name: Add pasue task  
+#     - name: Add pasue task
 #       ansible.builtin.pause:
 #         seconds: 15
+
+- name: Set SNMP & Syslog settings on IOSXR
+  hosts: routersxr
+  gather_facts: false
+  roles: 
+    - role: snmp
+    - role: syslog
 
 - name: Post CRQ config backup
   hosts: all
   tags: backup
-  gather_facts: False
+  gather_facts: false
   vars:
     pref: POST-CRQ
   roles:
-   # - show_status
     - backup_config
-  
+
 ...

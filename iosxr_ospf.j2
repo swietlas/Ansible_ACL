@@ -1,0 +1,20 @@
+{% if ospf is defined %}
+router ospf {{ ospf.process_id }}
+router-id {{ ospf.router_id }}
+ auto-cost reference-bandwidth {{ ospf.auto_cost.reference_bandwidth }}
+ address-family ipv4 unicast
+{% for item in ospf.areas %}
+  area {{ item.area_id }}
+{% for intf in item.interfaces %}
+   interface {{ intf.name }}
+{% if  intf.network is defined  %}
+  network {{ intf.network }}
+{% endif %}{#p2p#}
+{% if  intf.passive is defined %}
+{% if intf.passive == "true" %} 
+  passive enable
+{% endif %}{#-passivetrue-#}
+{% endif %}{#passive#}
+{% endfor %}{#intf#}
+{% endfor %}{#areas#}
+{% endif %}{#ospf#}

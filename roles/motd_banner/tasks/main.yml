@@ -1,12 +1,31 @@
 ---
 # tasks file for motd_banner
-- name: Configure IOS banner 
-  ios_banner:
+- name: Configure IOS banner
+  cisco.ios.ios_banner:
       banner: motd
       text: |
-        Attention - This is a secure network device
+        ***********SWT LAB***********************
+        Attention - This is my  secure network device
         Authorized personal only should connect and manage
         this device.
 
         Disconnect immediately if not approved.
+        ***********SWT LAB***********************
       state: present
+  when: ansible_net_system == "ios"
+
+- name: Configure IOSXR banner
+  cisco.iosxr.iosxr_banner:
+      banner: motd
+      text: |
+        ^
+        ***********SWT LAB***********************
+        Attention - This is my  secure network device
+        Authorized personal only should connect and manage
+        this device.
+
+        Disconnect immediately if not approved.
+        ***********SWT LAB***********************
+        ^
+      state: present
+  when: ansible_net_system == "iosxr"

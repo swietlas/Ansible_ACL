@@ -8,26 +8,25 @@ ansible_password: C1sc0123!
 allowed_vlans: 10-20,40
 native: 10
 
-vlans:
-  - id: 10
-    name: Ansible-Vlan DATA-VLAN
-  - id: 11
-    name: FirstVLAN Ansible
-  - id: 20
-    name: Ansible-Vlan HOST-VLAN
-  - id: 21
-    name: SecondVLAN Ansible
-  - id: 30
-    name: Ansible-Vlan 30
-  - id: 40 
-    name: Ansible-Vlan 40
-  - id: 40 
-    name: Ansible-Vlan 40
-  - id: 50
-    name: Ansible-Vlan MGMT
-  - id: 60
-    name: Ansible-Vlan DMZ 
-  - id: 70
-    name: Ansible-Vlan AT&T
-
+SNMP:
+  acl_name: NMS-SERVER
+#  snmp-server location D1 Rack 1
+#  snmp-server contact Student 555-1213
+#  snmp-server chassis-id Cisco Device D1
+  location: "swtlab"
+  contact: "swt"
+  chassis_id: "IOSXR-R1xr"
+  community:
+    rw: "true"
+    name: "SwtLabCommunity"
+  NMSaddr: "192.168.1.50"
+  ver: "2c"
+  # snmp-server enable traps
+  traps_enable: true
+  enabled_traps:
+    config: true
+    hsrp: true
+    ipsla: true
+    ntp: true
+    ospf: true
 ...

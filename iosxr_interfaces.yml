@@ -1,5 +1,5 @@
 - name: Play to set up IOSXR
-  hosts: R1xr
+  hosts: routersxr
   gather_facts: false
   tasks:
     - name: Setup interfaces
@@ -22,8 +22,11 @@
           - name: "{{ item.name }}"
             ipv4:
               - address: "{{ item.ipv4 }}"
+            # ipv6:other_settings:
+            #   - address: "{{ item.ipv6 }}"
 
       loop: "{{ interfaces }}"
       loop_control:
         label: "{{ item.name }}"
       tags: intf_l3
+      #when: "'Loopback' not in item.name"

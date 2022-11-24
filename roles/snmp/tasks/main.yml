@@ -1,0 +1,44 @@
+---
+# tasks file for roles/snmp
+    - name: Create ACLs for SNMP NMS
+      cisco.iosxr.iosxr_acls:
+        running_config: "{{ lookup('file', 'acls/NMS.cfg') }}"
+        state: parsed
+      register: acl_parsed
+
+    # - name: Display Parsed
+    #   ansible.builtin.debug:
+    #     var: acl_parsed
+
+    - name: Do reconciliation of parsed ACL
+      cisco.iosxr.iosxr_acls:
+        config: "{{ acl_parsed.parsed }}"
+        state: replaced
+      register: acl_ran
+
+    - name: Enable SNMP
+      cisco.iosxr.iosxr_snmp_server:
+        state: merged
+        config:
+          location: "{{ SNMP.location }}"
+          chassis_id: "{{ SNMP.chassis_id }}"
+          communities:
+            - name: "{{ SNMP.community.name }}"
+              acl_v4: "{{ SNMP.acl_name }}"
+              rw: "{{ SNMP.community.rw }}"
+          contact: "swt"
+          hosts:
+            - community: CCNPv9
+              host: "{{ SNMP.NMSaddr }}"
+              traps: "{{ SNMP.traps_enable }}"
+              version: "{{ SNMP.ver }}"
+          traps:
+            config: true
+            hsrp: true
+            ipsla: true
+            ntp: true
+            power: true
+            syslog: true
+            ipsec:
+              start: true
+              stop: true

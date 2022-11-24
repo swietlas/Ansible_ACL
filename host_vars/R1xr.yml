@@ -2,36 +2,36 @@ interfaces:
  - name: GigabitEthernet0/0/0/0 
    description: Link to R2 configured by Ansible
    ipv4: 192.168.12.1/30
-  #  ipv6: 2001:db8:acad:12::1/64
+   ipv6: 2001:db8:acad:12::1/64
   #  link_local: fe80::12:1
-   ospf_area_id: "0.0.0.0"
-   ospf_network: "point-to-point"
-   ospf_passive: "false"
+
 
  - name: GigabitEthernet0/0/0/1
    description: Link to D1 configured by Ansible
    ipv4: 192.168.1.1/24
-  #  ipv6: 2001:db8:acad:11::1/64
+   ipv6: 2001:db8:acad:11::1/64
   #  link_local: fe80::11:1
    cdp: 'no'
-   ospf_area_id: "0.0.0.1"
-   ospf_network: "point-to-point"
-   ospf_passive: "false"
-
-  
 
 
-
-# OSPF config data
+# OSPF config data for iosxr
 ospf:
   process_id: 1
   router_id: 1.1.1.1
   default_orignate: "false"
   auto_cost:
-    reference_bandwidth: 1000
+    reference_bandwidth: "1000"
   areas:
-    - area_id: 0
-    - area_id: 1
+    - area_id: 0.0.0.0
+      interfaces:
+        - name: GigabitEthernet0/0/0/0
+          network: "point-to-point"
+          passive: "false"
+    - area_id: 0.0.0.1
+      interfaces:
+        - name: GigabitEthernet0/0/0/1
+          network: point-to-point
+          passive: "false"
 
 ## Below section only required for IOS not IOSxr
 ospf_networks:
@@ -54,19 +54,33 @@ ospf_networks:
 other_settings:
   - opt: "no ip domain lookup"
 
-acls:
- - name: "AREA1_TO_AREA2"
-   acl_type: "extended"
-   aces:
-    - destination: 
-        address: ""
-        wildcard_bits: ""
-        any: "true"
-        host: "192.168.1.10"
-      grant: "deny"
-      protocol: "ip"
-      source:
-        host: "192.168.1.10"
-      ttl:
-        lt: 25
-      
+ACLs:
+- interface: GigabitEthernet0/0/0/1
+  acl_name: "AREA1-TO-AREA2"
+  direction: "in"  
+
+- interface: GigabitEthernet0/0/0/1
+  acl_name: "AREA2-TO-AREA1"
+  direction: "out"    
+
+# SNMP:
+#   acl_name: NMS-SERVER
+# #  snmp-server location D1 Rack 1
+# #  snmp-server contact Student 555-1213
+# #  snmp-server chassis-id Cisco Device D1
+#   location: "swtlab"
+#   contact: "swt"
+#   chassis_id: "IOSXR-R1xr"
+#   community:
+#     rw: "true"
+#     name: "SwtLabCommunity"
+#   NMSaddr: "192.168.1.50"
+#   ver: "2c"
+#   # snmp-server enable traps
+#   traps_enable: true
+#   enabled_traps:
+#     config: true
+#     hsrp: true
+#     ipsla: true
+#     ntp: true
+#     ospf: true

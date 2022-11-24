@@ -1,0 +1,21 @@
+---
+- name: Set ACLs
+  hosts: routersxr
+  gather_facts: false
+  tasks:
+
+    - name: Configure logging
+      cisco.iosxr.iosxr_logging_global:
+        config:
+          buffered:
+            size: "2097152"
+          facility: "local5"
+          events:
+            display_location: "true"
+          hosts:
+            - host: "10.10.7.254"
+              port: "514"
+              severity: "error"
+          trap:
+            severity: "errors"
+        state: merged
